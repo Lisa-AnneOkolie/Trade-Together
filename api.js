@@ -8,7 +8,7 @@
  * It looks like: https://script.google.com/macros/s/AKfycb.../exec
  */
 
-const API_BASE_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzrcvfLgkWvsIQbvzu2jKBKd_Lecgo3jt-dWvFCGTPeaBnQKoWMHE9Z1CbVGVrv6xAbJA/exec";
 
 const TOKEN_KEY = "tradeogether_token";
 
