@@ -284,38 +284,41 @@
     <div class="feed-card reveal" id="feed">
       <div class="feed-card-head">
         <strong style="font-family:'Sora',sans-serif;font-size:14px;">Live trade feed</strong>
-        <span class="live"><span class="dot"></span>Updating</span>
+        <span class="live"><span class="dot"></span><span id="feed-status">Updating</span></span>
       </div>
-
-      <div class="feed-row">
-        <span class="tick up"></span>
-        <div><div class="sym">EURUSD · Long</div><div class="who">@greenpip</div></div>
-        <div class="pnl up">+0.51%</div>
-        <div class="time">2h ago</div>
-      </div>
-      <div class="feed-row">
-        <span class="tick down"></span>
-        <div><div class="sym">NAS100 · Short</div><div class="who">@duskcandle</div></div>
-        <div class="pnl down">−0.34%</div>
-        <div class="time">3h ago</div>
-      </div>
-      <div class="feed-row">
-        <span class="tick up"></span>
-        <div><div class="sym">BTCUSD · Long</div><div class="who">@fibonacci_femi</div></div>
-        <div class="pnl up">+1.82%</div>
-        <div class="time">5h ago</div>
-      </div>
-      <div class="feed-row">
-        <span class="tick up"></span>
-        <div><div class="sym">XAUUSD · Long</div><div class="who">@quietrange</div></div>
-        <div class="pnl up">+0.27%</div>
-        <div class="time">7h ago</div>
-      </div>
-      <div class="feed-row">
-        <span class="tick down"></span>
-        <div><div class="sym">GBPJPY · Short</div><div class="who">@greenpip</div></div>
-        <div class="pnl down">−0.18%</div>
-        <div class="time">9h ago</div>
+      <div id="feed-rows">
+        <!-- Sample rows shown until api.js successfully loads real trades from getPublicFeed.
+             Once API_BASE_URL is set in api.js, renderFeed() below replaces this with live data. -->
+        <div class="feed-row">
+          <span class="tick up"></span>
+          <div><div class="sym">EURUSD · Long</div><div class="who">@greenpip</div></div>
+          <div class="pnl up">+0.51%</div>
+          <div class="time">2h ago</div>
+        </div>
+        <div class="feed-row">
+          <span class="tick down"></span>
+          <div><div class="sym">NAS100 · Short</div><div class="who">@duskcandle</div></div>
+          <div class="pnl down">−0.34%</div>
+          <div class="time">3h ago</div>
+        </div>
+        <div class="feed-row">
+          <span class="tick up"></span>
+          <div><div class="sym">BTCUSD · Long</div><div class="who">@fibonacci_femi</div></div>
+          <div class="pnl up">+1.82%</div>
+          <div class="time">5h ago</div>
+        </div>
+        <div class="feed-row">
+          <span class="tick up"></span>
+          <div><div class="sym">XAUUSD · Long</div><div class="who">@quietrange</div></div>
+          <div class="pnl up">+0.27%</div>
+          <div class="time">7h ago</div>
+        </div>
+        <div class="feed-row">
+          <span class="tick down"></span>
+          <div><div class="sym">GBPJPY · Short</div><div class="who">@greenpip</div></div>
+          <div class="pnl down">−0.18%</div>
+          <div class="time">9h ago</div>
+        </div>
       </div>
     </div>
   </div>
@@ -438,6 +441,7 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
   // reveal-on-scroll, respects reduced motion via CSS above
   const els = document.querySelectorAll('.reveal');
@@ -445,7 +449,43 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold: 0.15 });
   els.forEach(el => io.observe(el));
+
+  // Try to load the real feed. If API_BASE_URL isn't set yet, or the request
+  // fails, the sample rows already in the page stay put — no broken UI while
+  // you're mid-setup.
+  function timeAgo(iso) {
+    const mins = Math.max(1, Math.round((Date.now() - new Date(iso)) / 60000));
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.round(hrs / 24)}d ago`;
+  }
+
+  function renderFeed(trades) {
+    const container = document.getElementById('feed-rows');
+    container.innerHTML = trades.map(t => {
+      const up = (t.pnl_percent ?? 0) >= 0;
+      return `
+        <div class="feed-row">
+          <span class="tick ${up ? 'up' : 'down'}"></span>
+          <div><div class="sym">${t.symbol} · ${t.direction === 'long' ? 'Long' : 'Short'}</div><div class="who">@${t.handle}</div></div>
+          <div class="pnl ${up ? 'up' : 'down'}">${up ? '+' : ''}${t.pnl_percent}%</div>
+          <div class="time">${timeAgo(t.created_at)}</div>
+        </div>`;
+    }).join('');
+  }
+
+  (async () => {
+    if (!API_BASE_URL || API_BASE_URL.includes('PASTE_YOUR')) return; // not wired up yet
+    try {
+      const trades = await apiGet('getPublicFeed', { limit: 5 });
+      if (Array.isArray(trades) && trades.length) renderFeed(trades);
+    } catch (err) {
+      document.getElementById('feed-status').textContent = 'Offline';
+      console.error('Tradeogether feed error:', err);
+    }
+  })();
 </script>
 
 </body>
-</html>
+</html> 
