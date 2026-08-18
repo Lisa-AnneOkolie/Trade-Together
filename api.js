@@ -1,14 +1,4 @@
-/**
- * TRADEOGETHER — API BRIDGE
- * One file, included on every page, so the Apps Script URL only lives in one place.
- *
- * <script src="api.js"></script>  ← add this before your page's own <script> tag
- *
- * PASTE YOUR WEB APP URL BELOW, after: Deploy > New deployment > Web app > Deploy
- * It looks like: https://script.google.com/macros/s/AKfycb.../exec
- */
-
-const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzrcvfLgkWvsIQbvzu2jKBKd_Lecgo3jt-dWvFCGTPeaBnQKoWMHE9Z1CbVGVrv6xAbJA/exec";
+const API_BASE_URL = "https://script.google.com/macros/s/AKfycbywr3YKcSDrRQRUbOWMXADuM3f5NDcSbE_Wbt3sSLLHTHNJQ8Mb-HQz4LeV886D6Ze4Aw/exec";
 
 const TOKEN_KEY = "tradeogether_token";
 
@@ -52,4 +42,4 @@ async function apiPost(action, body = {}) {
   const json = await res.json();
   if (!json.success) throw new Error(json.error || "Request failed");
   return json.data;
-}
+} 
